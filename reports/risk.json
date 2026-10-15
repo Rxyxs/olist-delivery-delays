@@ -1,0 +1,38 @@
+{
+  "train_orders": 64320,
+  "test_orders": 32150,
+  "late_rate_train": 0.0794931592039801,
+  "late_rate_test": 0.04419906687402799,
+  "models": {
+    "state_rate": {
+      "auc": 0.5616421039122305,
+      "pr_auc": 0.05580737500809496,
+      "capture_top10": 0.12807881773399016,
+      "capture_top20": 0.30964109781843774
+    },
+    "logistic": {
+      "auc": 0.6698883790556154,
+      "pr_auc": 0.08228670545903907,
+      "capture_top10": 0.21252638986629135,
+      "capture_top20": 0.3715693173821253
+    },
+    "lightgbm": {
+      "auc": 0.6865566224671975,
+      "pr_auc": 0.0862285412588902,
+      "capture_top10": 0.23293455313159747,
+      "capture_top20": 0.4039408866995074
+    }
+  },
+  "top_features": {
+    "customer_state": 0.1623,
+    "seller_late_rate": 0.1114,
+    "category": 0.1095,
+    "promised_days": 0.1075,
+    "seller_prior_orders": 0.1018,
+    "distance_km": 0.093,
+    "freight": 0.0722,
+    "weight_g": 0.0566,
+    "freight_share": 0.055,
+    "price": 0.0538
+  }
+}

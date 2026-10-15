@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Olist Delivery Delays</title>
+<meta name="description" content="The causal effect of late deliveries on review scores in 96k real Olist marketplace orders, plus a checkout risk model and a retention analysis.">
+<style>
+  :root {
+    --bg: #FBFAF8; --surface: #FFFFFF; --ink: #23201D; --muted: #6B645D;
+    --line: #E3DED7; --accent: #2E7D6B; --good: #4C7A3E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151719; --surface: #1D2023; --ink: #E9EBED; --muted: #A2A8AE;
+      --line: #2E3236; --accent: #5FB8A2; --good: #7FAE6B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151719; --surface: #1D2023; --ink: #E9EBED; --muted: #A2A8AE;
+    --line: #2E3236; --accent: #5FB8A2; --good: #7FAE6B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px 96px; }
+  header { padding: 72px 0 40px; border-bottom: 1px solid var(--line); margin-bottom: 44px; }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.7rem); line-height: 1.15; margin: 0 0 18px; letter-spacing: -0.02em; }
+  .lede { font-size: clamp(1.02rem, 2.4vw, 1.17rem); color: var(--muted); margin: 0 0 24px; max-width: 64ch; }
+  .lede strong { color: var(--ink); }
+  .links a {
+    display: inline-block; margin: 0 10px 10px 0; padding: 9px 15px;
+    border: 1px solid var(--line); border-radius: 7px; text-decoration: none;
+    color: var(--ink); background: var(--surface); font-size: 0.9rem; transition: border-color .15s;
+  }
+  .links a:hover { border-color: var(--accent); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 28px 0 0; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; }
+  .stat b { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .stat span { color: var(--muted); font-size: 0.85rem; }
+  h2 { font-size: 1.42rem; margin: 56px 0 8px; letter-spacing: -0.01em; padding-top: 10px; border-top: 1px solid var(--line); }
+  h2 .num { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  p, li { max-width: 72ch; }
+  p { margin: 0 0 16px; }
+  figure { margin: 26px 0; }
+  figure img { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+  figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 9px; max-width: 72ch; }
+  .tablewrap { overflow-x: auto; margin: 22px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 460px; }
+  th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; }
+  .win td { color: var(--good); font-weight: 600; }
+  code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 0.88em; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>What a late delivery costs a marketplace</h1>
+  <p class="lede">96,470 real orders from Olist, a Brazilian marketplace. Late orders get <strong>2 points lower reviews</strong> on a 1-5 scale. The question is how much of that gap the delay itself causes, whether it can be seen coming at checkout, and whether it costs the customer too.</p>
+  <div class="links">
+    <a href="https://github.com/Rxyxs/olist-delivery-delays">Code on GitHub</a>
+    <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce">Dataset on Kaggle</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>-1.97</b><span>review points caused by arriving late (doubly robust)</span></div>
+    <div class="stat"><b>-0.98</b><span>already at 1-3 days late</span></div>
+    <div class="stat"><b>23%</b><span>of delays flagged in the riskiest 10% at checkout</span></div>
+    <div class="stat"><b>74%</b><span>of late orders reviewed before the parcel arrived</span></div>
+  </div>
+</header>
+
+<h2><span class="num">01</span>The delay, not the order, drives the score</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>Estimator</th><th>Effect on review score</th></tr></thead>
+  <tbody>
+    <tr><td>Naive difference</td><td>-2.02</td></tr>
+    <tr><td>OLS with purchase-time covariates</td><td>-1.98</td></tr>
+    <tr><td>Inverse propensity weighting</td><td>-1.97</td></tr>
+    <tr class="win"><td>AIPW, cross-fitted LightGBM</td><td>-1.97 (95% CI -2.02 to -1.93)</td></tr>
+  </tbody>
+</table></div>
+<p>Adjusting for distance, states, items, price, category and purchase date barely moves the estimate. A hidden confounder would need to explain 27% of the residual variance of both lateness and score to erase it; the strongest observed one explains about 1%.</p>
+<figure>
+  <img src="img/dose_response.png" alt="Bar chart of the effect of lateness on review score by band: about -1 for 1-3 days, -2.15 for 4-7 days, and about -2.5 for 8-14 and 15+ days, with naive and adjusted bars nearly equal.">
+  <figcaption>The damage is front-loaded: one point after 1-3 days, more than two after a week, then a floor.</figcaption>
+</figure>
+<figure>
+  <img src="img/overlap.png" alt="Histogram of cross-fitted propensity scores for on-time and late orders; both groups cover the same range, on-time orders concentrated near zero.">
+  <figcaption>Late orders have on-time look-alikes across the propensity range, so the comparison does not extrapolate.</figcaption>
+</figure>
+
+<h2><span class="num">02</span>The cleaning step that would have biased everything</h2>
+<p>Olist sends its survey when the parcel arrives <em>or</em> when the promised date passes. For late orders the survey usually comes first: 74% of them were reviewed before delivery, by customers who already knew. Dropping pre-delivery reviews, the obvious cleanup, would keep only a quarter of the late orders and none more than 8 days late.</p>
+
+<h2><span class="num">03</span>Seeing delays coming</h2>
+<figure>
+  <img src="img/risk_capture.png" alt="Cumulative capture curve: share of late deliveries flagged against share of orders flagged, for orders placed April to August 2018; the model curve sits above the random diagonal, reaching about 23% at 10% and 40% at 20%.">
+  <figcaption>Checkout-time model, trained to March 2018 and scored on April-August 2018: AUC 0.69. Useful as a triage list, not a guarantee; most delays come from events that do not exist at checkout.</figcaption>
+</figure>
+
+<h2><span class="num">04</span>Does it cost the customer?</h2>
+<p>Only 3% of Olist customers ever buy again. After a late first order, 2.6% returned within 180 days against 3.1% after an on-time one, but the adjusted effect (-0.4 points, 95% CI -1.0 to +0.2) and the Cox hazard ratio (0.90, CI 0.78-1.03) cannot rule out zero. Effects under about one percentage point are beyond what this data can detect.</p>
+
+<footer>
+  Pablo Reyes · Data: Brazilian E-Commerce Public Dataset by Olist, Kaggle, CC BY-NC-SA 4.0 (not redistributed). Code under MIT.
+</footer>
+</div>
+</body>
+</html>
