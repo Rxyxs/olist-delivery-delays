@@ -1,4 +1,4 @@
-**English** | [Español](README.es.md)
+[English ] | [[Español](README.es.md) ]
 
 # What does a late delivery cost an e-commerce marketplace?
 

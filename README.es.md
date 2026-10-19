@@ -1,4 +1,4 @@
-[English](README.md) | **Español**
+[[English](README.md) ] | [Español ]
 
 # ¿Cuánto le cuesta a un marketplace una entrega atrasada?
 
